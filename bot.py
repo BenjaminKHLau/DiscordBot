@@ -22,7 +22,7 @@ async def on_ready():
     
 ## Cooldown 
 # def cooldown_for_everyone_but_me(interaction: discord.Interaction) -> Optional[app_commands.Cooldown]:
-#     if interaction.user.id == 80088516616269824:
+#     if interaction.user.id == 137812388614373376:
 #         return None
 #     return app_commands.Cooldown(1, 10.0)
     
@@ -125,7 +125,7 @@ async def on_message(message):
         return
     user = message.author
     await open_account(user)
-    print("test", message)
+    # print("test", message)
     users = await get_bank_data()
 
     random_multiplier = random.randint(1,10)
@@ -135,5 +135,44 @@ async def on_message(message):
     users[str(message.author.id)]["wallet"] += earnings
     with open("eco.json", "w") as f:
         json.dump(users, f)
+
+@bot.command()
+async def leaderboard(ctx, x=10):
+  with open('eco.json', 'r') as f:
+    
+    users = json.load(f)
+    
+  leaderboard = {}
+  total=[]
+  
+  for user in list(users):
+    name = int(user)
+    total_amt = users[str(user)]['wallet']
+    leaderboard[total_amt] = name
+    total.append(total_amt)
+    
+
+  total = sorted(total,reverse=True)
+  
+
+  em = discord.Embed(
+    title = f'Top {x} richest members in {ctx.guild.name}',
+    description = 'The richest people in this server'
+  )
+  
+  index = 1
+  for amt in total:
+    id_ = leaderboard[amt]
+    member = await ctx.guild.fetch_member(id_)  
+    em.add_field(name = f'{index}: {member}', value = f'{amt} coins', inline=False)
+    
+    
+    if index == x:
+      break
+    else:
+      index += 1
+      
+  await ctx.send(embed = em)
+  
 
 bot.run(token)

@@ -1,0 +1,4 @@
+    new_balance = users[str(message.author.id)]["wallet"]
+        
+    await message.channel.send(f"{random_multiplier}, {msg_len}. earn {earnings}")
+    await message.channel.send(f"{new_balance}")

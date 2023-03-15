@@ -79,9 +79,12 @@ async def coinflip(ctx, *arg):
     user = ctx.author
     users = await get_bank_data()
     wallet_amount = users[str(user.id)]["wallet"]
+    print(arg,"ARGUMENT")
     if arg == (): 
         await ctx.send("Provide a wager amount in numbers")
         return
+    if arg[0] == "max":
+        arg = int(wallet_amount), #comma turns assigned into tuple
     elif int(arg[0]) < 0:
         await ctx.send("Nice try, loser")
         return
@@ -99,7 +102,7 @@ async def coinflip(ctx, *arg):
             json.dump(users, f)
         await get_bank_data()
         new_balance = users[str(user.id)]["wallet"]
-        em = discord.Embed(title = f"{ctx.author.name} flipped TAILS!")
+        em = discord.Embed(title = f"{ctx.author.name} flipped TAILS!", color=discord.Color.red())
         em.add_field(name = "Lost Wager", value = arg[0])
         em.add_field(name = "New Balance", value = new_balance)
         await ctx.send(embed = em)
@@ -110,7 +113,7 @@ async def coinflip(ctx, *arg):
             json.dump(users, f)
         await get_bank_data()
         new_balance = users[str(user.id)]["wallet"]
-        em = discord.Embed(title = f"{ctx.author.name} flipped HEADS!")
+        em = discord.Embed(title = f"{ctx.author.name} flipped HEADS!", color=discord.Color.green())
         em.add_field(name = "Winnings", value = arg[0])
         em.add_field(name = "New Balance", value = new_balance)
         await ctx.send(embed = em)
@@ -157,15 +160,16 @@ async def leaderboard(ctx, x=10):
 
   em = discord.Embed(
     title = f'Top {x} richest members in {ctx.guild.name}',
-    description = 'The richest people in this server'
+    description = 'The richest people in this server',
+    color=discord.Color.orange()
   )
   
   index = 1
   for amt in total:
     id_ = leaderboard[amt]
-    member = await ctx.guild.fetch_member(id_)  
+    member = await bot.fetch_user(id_)  
     em.add_field(name = f'{index}: {member}', value = f'{amt} coins', inline=False)
-    
+    print(member)
     
     if index == x:
       break

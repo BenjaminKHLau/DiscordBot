@@ -20,6 +20,26 @@ token = os.getenv("DISC_TOKEN")
 async def on_ready():
     print(f'{bot.user} is now running!')
         
+        
+## Help 
+@bot.command()
+async def Help(ctx):
+    menu = [
+        ["Chatting", "Typing in chat awards you with a random amount of coins!"],
+        ["-balance", "Shows your coin balance"],
+        ["-work", "Gives a random amount between 1 - 100 coins"],
+        ["-coinflip number, half, max", "Flips a coin. Heads and you win what you wager and vice-versa"],
+        ["-leaderboard", "Shows the top 10 richest users in the server"],
+        ["-lotto", "1 in a million chance to win a large jackpot. Costs 100 coins to play. Jackpot increases if you lose!"],
+        ["-jackpot", "Shows the current jackpot"],
+        ["-pvp @user", "Use this against another user. You will win or lose a random amount of available coins based on opponent's balance!"]
+    ]
+    em = discord.Embed(title = f"Commands Menu", color=discord.Color.blue() )
+    for item in menu:
+        em.add_field(name = item[0], value = item[1], inline=False)
+    await ctx.send(embed = em)
+    return
+        
 ## Economy
 @bot.command()
 async def balance(ctx):
@@ -168,7 +188,7 @@ async def leaderboard(ctx, x=10):
         id_ = leaderboard[amt]
         member = await bot.fetch_user(id_)  
         em.add_field(name = f'{index}: {member}', value = f'{amt} coins', inline=False)
-        print(member)
+        # print(member)
     
         if index == x:
             break
@@ -186,7 +206,6 @@ async def lotto(ctx):
     if wallet_amount < 100:
         await ctx.send(f"A lotto ticket costs 100 coins. \nYou only have {wallet_amount} coins, {user.mention}!")
         return
-    # users["jackpot"] = 1000000
     jackpot = users["jackpot"]
     winning_num = random.randint(1,1001)
     user_drawing = random.randint(1,1001)

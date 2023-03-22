@@ -205,20 +205,20 @@ async def lotto(ctx):
     jackpot = guilds["jackpot"]
     winning_num = random.randint(1,101)
     user_drawing = random.randint(1,101)
-    with open("eco.json", "w") as f:
-        json.dump(guilds, f)
     if winning_num == user_drawing:
         guilds[str(user.guild.id)][str(user.id)]["wallet"] += jackpot
-        jackpot = 1000000
-        with open("eco.json", "w") as f:
-            json.dump(guilds, f)
-        await get_bank_data()
         em = discord.Embed(
             title = f"{user} drew {user_drawing}. The winning number was {winning_num}!",
             color=discord.Color.teal()
         )
+        with open("eco.json", "w") as f:
+            json.dump(guilds, f)
+        await get_bank_data()
         new_balance = guilds[str(user.guild.id)][str(user.id)]["wallet"]
         em.add_field(name = f"You have won the {jackpot} gold jackpot!", value = f"Your new balance is {new_balance}", inline=False)
+        guilds["jackpot"] = 1000000
+        with open("eco.json", "w") as f:
+            json.dump(guilds, f)
     else:
         jackpot += 50
         guilds["jackpot"] += 50

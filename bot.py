@@ -32,7 +32,8 @@ async def Help(ctx):
         ["-leaderboard", "Shows the top 10 richest users in the server"],
         ["-lotto", "1 in a million chance to win a large jackpot. Costs 100 gold to play. Jackpot increases if you lose!"],
         ["-jackpot", "Shows the current jackpot"],
-        ["-pvp @user", "Use this against another user. You will win or lose a random amount of available gold based on opponent's balance!"]
+        ["-pvp @user", "Use this against another user. You will win or lose a random amount of available gold based on opponent's balance!"],
+        ["-givegold @user number", "If you have enough gold to give, this command will give the target user your gold."]
     ]
     em = discord.Embed(title = f"Commands Menu", color=discord.Color.blue() )
     for item in menu:
@@ -301,8 +302,41 @@ async def pvp(ctx, target: discord.Member):
         em.add_field(name = f"You rolled {your_roll} and {target} rolled {their_roll}" , value = f"You gave {target} {losses} gold to leave you alone. You now have {your_new_balance} gold left and {target} has {their_new_balance} gold")
         await ctx.send(embed = em)
         
-# @bot.commands()
-# async def something(ctx):
-#     pass
+@bot.command()
+async def addgold(ctx, target: discord.Member, gold):
+    user = ctx.author
+    guilds = await get_bank_data()
+    if str(user.id) == "137812388614373376":
+        guilds[str(user.guild.id)][str(target.id)]["wallet"] += int(gold)
+        
+        with open("eco.json", "w") as f:
+            json.dump(guilds, f)
+        await get_bank_data()
+            
+        new_balance = guilds[str(user.guild.id)][str(target.id)]["wallet"]
+        await ctx.send(f"Admin has added {gold} gold to {target.mention}'s wallet. \n They now have {new_balance} gold.")
+    else:
+        await ctx.send("Unauthorized user")
     
+@bot.command()
+async def givegold(ctx, target: discord.Member, gold):
+    user = ctx.author
+    guilds = await get_bank_data()
+    if int(gold) < 0:
+        await ctx.send(f"You cannot give negative gold")
+        return
+    elif guilds[str(user.guild.id)][str(user.id)]["wallet"] < int(gold):
+        await ctx.send(f"You don't have enough gold to give")
+    else:
+        guilds[str(user.guild.id)][str(user.id)]["wallet"] -= int(gold)
+        guilds[str(user.guild.id)][str(target.id)]["wallet"] += int(gold)
+        with open("eco.json", "w") as f:
+            json.dump(guilds, f)
+        await get_bank_data()
+        
+        your_new_balance = guilds[str(user.guild.id)][str(user.id)]["wallet"]
+        target_new_balance = guilds[str(user.guild.id)][str(target.id)]["wallet"]
+        await ctx.send(f"{user.mention} has given {gold} gold to {target.mention}. \n{user} now has {your_new_balance} gold \n{target} now has {target_new_balance} gold")
+        
+        
 bot.run(token)

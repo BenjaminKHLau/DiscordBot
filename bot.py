@@ -44,10 +44,10 @@ async def Help(ctx):
 @bot.command()
 async def balance(ctx):
     await open_account(ctx.author)
-    users = await get_bank_data()
+    guilds = await get_bank_data()
     user = ctx.author
     
-    wallet_amount = users[str(user.id)]["wallet"]
+    wallet_amount = guilds[str(user.guild.id)][str(user.id)]["wallet"]
     
     em = discord.Embed(title = f"{ctx.author.name}'s  balance", color=discord.Color.blue())
     em.add_field(name = "Wallet balance", value = wallet_amount)
@@ -58,40 +58,41 @@ async def balance(ctx):
 async def work(ctx):
     user = ctx.author
     await open_account(user)
-    users = await get_bank_data()
+    guilds = await get_bank_data()
     # print("USER STUFF", ctx, user.nick)
     earnings = random.randrange(101)
     
     await ctx.channel.send(f"{user.mention} has earned {earnings} coins!")
     
-    users[str(user.id)]["wallet"] += earnings
+    guilds[str(user.guild.id)][str(user.id)]["wallet"] += earnings
     
     with open("eco.json", "w") as f:
-        json.dump(users, f)
+        json.dump(guilds, f)
         
 async def open_account(user):
-    users = await get_bank_data()
-            
-    if str(user.id) in users:
-        return False
-    else:
-        users[str(user.id)] = {}
-        users[str(user.id)]["wallet"] = 0
+    guilds = await get_bank_data()
+    print("OPEN ACCOUNT STUFF", guilds)
+    if guilds.get(str(user.guild.id)) == None:
+        guilds[str(user.guild.id)] = {}
+        
+    if str(user.id) not in guilds[str(user.guild.id)]:
+        guilds[str(user.guild.id)][str(user.id)] = {}
+        guilds[str(user.guild.id)][str(user.id)]["wallet"] = 0
         
     with open("eco.json", "w") as f:
-        json.dump(users, f)
+        json.dump(guilds, f)
     return True
 
 async def get_bank_data():
     with open("eco.json", "r") as f:
-        users = json.load(f)   
-    return users 
+        guilds = json.load(f)   
+    return guilds 
 
 @bot.command()
 async def coinflip(ctx, *arg):
     user = ctx.author
-    users = await get_bank_data()
-    wallet_amount = users[str(user.id)]["wallet"]
+    guilds = await get_bank_data()
+    wallet_amount = guilds[str(user.guild.id)][str(user.id)]["wallet"]
     if arg == (): 
         await ctx.send("Provide a wager amount in numbers")
         return
@@ -111,22 +112,22 @@ async def coinflip(ctx, *arg):
     
     flip_result = random.randint(0, 1)
     if flip_result == 0:
-        users[str(user.id)]["wallet"] -= int(arg[0])
+        guilds[str(user.guild.id)][str(user.id)]["wallet"] -= int(arg[0])
         with open("eco.json", "w") as f:
-            json.dump(users, f)
+            json.dump(guilds, f)
         await get_bank_data()
-        new_balance = users[str(user.id)]["wallet"]
+        new_balance = guilds[str(user.guild.id)][str(user.id)]["wallet"]
         em = discord.Embed(title = f"{ctx.author.name} flipped TAILS!", color=discord.Color.red())
         em.add_field(name = "Lost Wager", value = arg[0])
         em.add_field(name = "New Balance", value = new_balance)
         await ctx.send(embed = em)
         # await ctx.send(f"{user} flipped TAILS and have LOST {arg[0]} coins.  {user} now has {new_balance}")
     else:
-        users[str(user.id)]["wallet"] += int(arg[0])
+        guilds[str(user.guild.id)][str(user.id)]["wallet"] += int(arg[0])
         with open("eco.json", "w") as f:
-            json.dump(users, f)
+            json.dump(guilds, f)
         await get_bank_data()
-        new_balance = users[str(user.id)]["wallet"]
+        new_balance = guilds[str(user.guild.id)][str(user.id)]["wallet"]
         em = discord.Embed(title = f"{ctx.author.name} flipped HEADS!", color=discord.Color.green())
         em.add_field(name = "Winnings", value = arg[0])
         em.add_field(name = "New Balance", value = new_balance)
@@ -142,8 +143,8 @@ async def on_message(message):
         return
     user = message.author
     await open_account(user)
-    # print("test", message)
-    users = await get_bank_data()
+    print("test", user.guild.id)
+    guilds = await get_bank_data()
 
     random_multiplier = random.randint(1,3)
     msg_len = len(message.content)
@@ -151,25 +152,28 @@ async def on_message(message):
         msg_len = 200
     earnings = random_multiplier * msg_len
     
-    users[str(message.author.id)]["wallet"] += earnings
+    guilds[str(user.guild.id)][str(user.id)]["wallet"] += earnings
     with open("eco.json", "w") as f:
-        json.dump(users, f)
+        json.dump(guilds, f)
     return
 
 @bot.command()
 async def leaderboard(ctx, x=10):
+    # guilds = await get_bank_data()
+    user = ctx.author
     with open('eco.json', 'r') as f:
     
-        users = json.load(f)
+        guilds = json.load(f)
     
     leaderboard = {}
     total=[]
-  
-    for user in list(users):
-        if user == "jackpot":
+    # print(guilds, "LEADERBOARD GUILD STUFF ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    for guy in list(guilds[str(user.guild.id)]):
+        if guy == "jackpot":
            continue
-        name = int(user)
-        total_amt = users[str(user)]['wallet']
+        # print(guy, "TESTING GUYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY")
+        name = int(guy)
+        total_amt = guilds[str(user.guild.id)][str(guy)]["wallet"]
         leaderboard[total_amt] = name
         total.append(total_amt)
     
@@ -201,36 +205,36 @@ async def leaderboard(ctx, x=10):
 @bot.command()
 async def lotto(ctx):
     user = ctx.author
-    users = await get_bank_data()
-    wallet_amount = users[str(user.id)]["wallet"]
+    guilds = await get_bank_data()
+    wallet_amount = guilds[str(user.guild.id)][str(user.id)]["wallet"]
     if wallet_amount < 100:
         await ctx.send(f"A lotto ticket costs 100 coins. \nYou only have {wallet_amount} coins, {user.mention}!")
         return
-    jackpot = users["jackpot"]
+    jackpot = guilds["jackpot"]
     winning_num = random.randint(1,1001)
     user_drawing = random.randint(1,1001)
     with open("eco.json", "w") as f:
-        json.dump(users, f)
+        json.dump(guilds, f)
     if winning_num == user_drawing:
-        users[str(user.id)]["wallet"] += jackpot
+        guilds[str(user.guild.id)][str(user.id)]["wallet"] += jackpot
         jackpot = 1000000
         with open("eco.json", "w") as f:
-            json.dump(users, f)
+            json.dump(guilds, f)
         await get_bank_data()
         em = discord.Embed(
             title = f"{user} drew {user_drawing}. The winning number was {winning_num}!",
             color=discord.Color.teal()
         )
-        new_balance = users[str(user.id)]["wallet"]
+        new_balance = guilds[str(user.guild.id)][str(user.id)]["wallet"]
         em.add_field(name = f"You have won the {jackpot} coin jackpot!", value = f"Your new balance is {new_balance}", inline=False)
     else:
         jackpot += 50
-        users["jackpot"] += 50
-        users[str(user.id)]["wallet"] -= 100
+        guilds["jackpot"] += 50
+        guilds[str(user.guild.id)][str(user.id)]["wallet"] -= 100
         with open("eco.json", "w") as f:
-            json.dump(users, f)
+            json.dump(guilds, f)
         await get_bank_data()
-        new_balance = users[str(user.id)]["wallet"]
+        new_balance = guilds[str(user.guild.id)][str(user.id)]["wallet"]
         em = discord.Embed(
             title = f"{user} drew {user_drawing}. The winning number was {winning_num}!",
             color=discord.Color.red()
@@ -244,7 +248,7 @@ async def jackpot(ctx):
     user = ctx.author
     users = await get_bank_data()
     jackpot = users["jackpot"]
-    wallet = users[str(user.id)]["wallet"]
+    wallet = users[str(user.guild.id)][str(user.id)]["wallet"]
     # print(jackpot)
     em = discord.Embed(
         title = f"The jackpot is currently {jackpot} coins!"
@@ -255,9 +259,9 @@ async def jackpot(ctx):
 @bot.command()
 async def pvp(ctx, target: discord.Member):
     user = ctx.author
-    users = await get_bank_data()
-    your_wallet = users[str(user.id)]["wallet"]
-    their_wallet = users[str(target.id)]["wallet"]
+    guilds = await get_bank_data()
+    your_wallet = guilds[str(user.guild.id)][str(user.id)]["wallet"]
+    their_wallet = guilds[str(target.guild.id)][str(user.id)]["wallet"]
     your_roll = random.randint(1, 101)
     their_roll = random.randint(1, 101)
     bounty = (random.randint(10, 31)) / 100
@@ -266,14 +270,14 @@ async def pvp(ctx, target: discord.Member):
     if your_roll > their_roll:
         
         earnings = math.ceil(their_wallet * bounty)
-        users[str(user.id)]["wallet"] += earnings
-        users[str(target.id)]["wallet"] -= earnings
+        guilds[str(user.guild.id)][str(user.id)]["wallet"] += earnings
+        guilds[str(user.guild.id)][str(target.id)]["wallet"] -= earnings
         
         with open("eco.json", "w") as f:
-            json.dump(users, f)
+            json.dump(guilds, f)
         await get_bank_data()
-        your_new_balance = users[str(user.id)]["wallet"]
-        their_new_balance = users[str(target.id)]["wallet"]
+        your_new_balance = guilds[str(user.guild.id)][str(user.id)]["wallet"]
+        their_new_balance = guilds[str(user.guild.id)][str(target.id)]["wallet"]
         em = discord.Embed(
         title = f"You defeated {target}!",
         color=discord.Color.green()
@@ -291,14 +295,14 @@ async def pvp(ctx, target: discord.Member):
     else:
         
         losses = math.ceil(your_wallet * bounty)
-        users[str(user.id)]["wallet"] -= losses
-        users[str(target.id)]["wallet"] += losses
+        guilds[str(user.guild.id)][str(user.id)]["wallet"] -= losses
+        guilds[str(user.guild.id)][str(target.id)]["wallet"] += losses
         
         with open("eco.json", "w") as f:
-            json.dump(users, f)
+            json.dump(guilds, f)
         await get_bank_data()
-        your_new_balance = users[str(user.id)]["wallet"]
-        their_new_balance = users[str(target.id)]["wallet"]
+        your_new_balance = guilds[str(user.guild.id)][str(user.id)]["wallet"]
+        their_new_balance = guilds[str(user.guild.id)][str(target.id)]["wallet"]
         
         em = discord.Embed(
         title = f"{target} has defeated you!",
@@ -307,5 +311,8 @@ async def pvp(ctx, target: discord.Member):
         em.add_field(name = f"You rolled {your_roll} and {target} rolled {their_roll}" , value = f"You gave {target} {losses} coins to leave you alone. You now have {your_new_balance} coins left and {target} has {their_new_balance} coins")
         await ctx.send(embed = em)
         
+# @bot.commands()
+# async def something(ctx):
+#     pass
     
 bot.run(token)

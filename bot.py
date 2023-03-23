@@ -49,9 +49,11 @@ async def balance(ctx):
     user = ctx.author
     
     wallet_amount = guilds[str(user.guild.id)][str(user.id)]["wallet"]
+    bank_amount = guilds[str(user.guild.id)][str(user.id)]["bank"]
     
     em = discord.Embed(title = f"{ctx.author.name}'s  balance", color=discord.Color.blue())
-    em.add_field(name = "Gold balance", value = f"{wallet_amount} gold")
+    em.add_field(name = "Wallet balance", value = f"{wallet_amount} gold")
+    em.add_field(name = "Bank balance", value = f"{bank_amount} gold")
     await ctx.send(embed = em)
     
 @bot.command()
@@ -76,6 +78,7 @@ async def open_account(user):
     if str(user.id) not in guilds[str(user.guild.id)]:
         guilds[str(user.guild.id)][str(user.id)] = {}
         guilds[str(user.guild.id)][str(user.id)]["wallet"] = 0
+        guilds[str(user.guild.id)][str(user.id)]["bank"] = 0
         
     with open("eco.json", "w") as f:
         json.dump(guilds, f)
@@ -139,7 +142,7 @@ async def on_message(message):
         return
     user = message.author
     await open_account(user)
-    print("test", user.guild.id)
+    # print("test", user.guild.id)
     guilds = await get_bank_data()
 
     random_multiplier = random.randint(1,3)
@@ -184,7 +187,8 @@ async def leaderboard(ctx, x=10):
     for amt in total:
         id_ = leaderboard[amt]
         member = await bot.fetch_user(id_)  
-        em.add_field(name = f'{index}: {member}', value = f'{amt} gold', inline=False)
+        bank = guilds[str(user.guild.id)][str(id_)]["bank"]
+        em.add_field(name = f'{index}: {member}', value = f'Wallet: {amt} gold \n Bank: {bank} gold', inline=False)
     
         if index == x:
             break
@@ -338,5 +342,42 @@ async def givegold(ctx, target: discord.Member, gold):
         target_new_balance = guilds[str(user.guild.id)][str(target.id)]["wallet"]
         await ctx.send(f"{user.mention} has given {gold} gold to {target.mention}. \n{user} now has {your_new_balance} gold \n{target} now has {target_new_balance} gold")
         
+@bot.command()
+async def deposit(ctx, gold):
+    user = ctx.author
+    guilds = await get_bank_data()
+    if int(gold) < 0:
+        await ctx.send(f"You cannot deposit negative gold")
+        return
+    elif guilds[str(user.guild.id)][str(user.id)]["wallet"] < int(gold):
+        await ctx.send(f"You don't have enough gold to deposit")
+    else:
+        guilds[str(user.guild.id)][str(user.id)]["wallet"] -= int(gold)
+        guilds[str(user.guild.id)][str(user.id)]["bank"] += int(gold)
+        with open("eco.json", "w") as f:
+            json.dump(guilds, f)
+        await get_bank_data()
+        
+        bank_new_balance = guilds[str(user.guild.id)][str(user.id)]["bank"]
+        await ctx.send(f"{user.mention} has deposited {gold} gold into their bank account. \n{user} now has {bank_new_balance} gold in their bank account")
+
+@bot.command()
+async def withdraw(ctx, gold):
+    user = ctx.author
+    guilds = await get_bank_data()
+    if int(gold) < 0:
+        await ctx.send(f"You cannot withdraw negative gold")
+        return
+    elif guilds[str(user.guild.id)][str(user.id)]["bank"] < int(gold):
+        await ctx.send(f"You don't have enough gold to withdraw")
+    else:
+        guilds[str(user.guild.id)][str(user.id)]["bank"] -= int(gold)
+        guilds[str(user.guild.id)][str(user.id)]["wallet"] += int(gold)
+        with open("eco.json", "w") as f:
+            json.dump(guilds, f)
+        await get_bank_data()
+        
+        bank_new_balance = guilds[str(user.guild.id)][str(user.id)]["wallet"]
+        await ctx.send(f"{user.mention} has withdrew {gold} gold from their bank account. \n{user} now has {bank_new_balance} gold in their wallet")
         
 bot.run(token)

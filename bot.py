@@ -28,6 +28,8 @@ async def Help(ctx):
         ["Chatting", "Typing in chat awards you with a random amount of gold!"],
         ["-balance", "Shows your gold balance"],
         ["-work", "Gives a random amount between 1 - 1000 gold"],
+        ["-deposit number", "Deposits your gold to your bank account for safekeeping"],
+        ["-withdraw number", "Withdraw your gold from your bank account"],
         ["-coinflip number, half, max", "Flips a gold. Heads and you win what you wager and vice-versa"],
         ["-leaderboard", "Shows the top 10 richest users in the server"],
         ["-lotto", "1 in 10000 chance to win a large jackpot. Costs 100 gold to play. Jackpot increases if you lose!"],
@@ -254,6 +256,7 @@ async def jackpot(ctx):
     await ctx.send(embed = em)
 
 @bot.command()
+@commands.cooldown(1, 15, commands.BucketType.user)
 async def pvp(ctx, target: discord.Member):
     user = ctx.author
     guilds = await get_bank_data()

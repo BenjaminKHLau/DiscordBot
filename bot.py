@@ -27,13 +27,14 @@ async def Help(ctx):
     menu = [
         ["Chatting", "Typing in chat awards you with a random amount of gold!"],
         ["-balance", "Shows your gold balance"],
-        ["-work", "Gives a random amount between 1 - 100 gold"],
+        ["-work", "Gives a random amount between 1 - 1000 gold"],
         ["-coinflip number, half, max", "Flips a gold. Heads and you win what you wager and vice-versa"],
         ["-leaderboard", "Shows the top 10 richest users in the server"],
-        ["-lotto", "1 in a million chance to win a large jackpot. Costs 100 gold to play. Jackpot increases if you lose!"],
+        ["-lotto", "1 in 10000 chance to win a large jackpot. Costs 100 gold to play. Jackpot increases if you lose!"],
         ["-jackpot", "Shows the current jackpot"],
         ["-pvp @user", "Use this against another user. You will win or lose a random amount of available gold based on opponent's balance!"],
-        ["-givegold @user number", "If you have enough gold to give, this command will give the target user your gold."]
+        ["-givegold @user number", "If you have enough gold to give, this command will give the target user your gold."],
+        ["-bankheist @user","Take a chance to steal from your targets' bank account. \nWARNING: FAILING MAY HAVE HARSH CONSEQUENCES!! \nHas a 1-hour cooldown"]
     ]
     em = discord.Embed(title = f"Commands Menu", color=discord.Color.blue() )
     for item in menu:
@@ -57,11 +58,12 @@ async def balance(ctx):
     await ctx.send(embed = em)
     
 @bot.command()
+@commands.cooldown(1, 60, commands.BucketType.user)
 async def work(ctx):
     user = ctx.author
     await open_account(user)
     guilds = await get_bank_data()
-    earnings = random.randrange(101)
+    earnings = random.randrange(1001)
     
     await ctx.channel.send(f"{user.mention} has earned {earnings} gold!")
     
@@ -358,8 +360,16 @@ async def deposit(ctx, gold):
             json.dump(guilds, f)
         await get_bank_data()
         
+        wallet_new_balance = guilds[str(user.guild.id)][str(user.id)]["wallet"]
         bank_new_balance = guilds[str(user.guild.id)][str(user.id)]["bank"]
-        await ctx.send(f"{user.mention} has deposited {gold} gold into their bank account. \n{user} now has {bank_new_balance} gold in their bank account")
+        em = discord.Embed(
+        title = f"{user} deposited {gold} gold",
+        color=discord.Color.teal()
+    )
+        em.add_field(name = f"Wallet balance", value = f"{wallet_new_balance} gold")
+        em.add_field(name = f"Bank balance", value = f"{bank_new_balance} gold")
+        await ctx.send(embed = em)
+        # await ctx.send(f"{user.mention} has deposited {gold} gold into their bank account. \n{user} now has {bank_new_balance} gold in their bank account")
 
 @bot.command()
 async def withdraw(ctx, gold):
@@ -377,7 +387,25 @@ async def withdraw(ctx, gold):
             json.dump(guilds, f)
         await get_bank_data()
         
-        bank_new_balance = guilds[str(user.guild.id)][str(user.id)]["wallet"]
-        await ctx.send(f"{user.mention} has withdrew {gold} gold from their bank account. \n{user} now has {bank_new_balance} gold in their wallet")
+        wallet_new_balance = guilds[str(user.guild.id)][str(user.id)]["wallet"]
+        bank_new_balance = guilds[str(user.guild.id)][str(user.id)]["bank"]
+        em = discord.Embed(
+        title = f"{user} withdrew {gold} gold",
+        color=discord.Color.teal()
+    )
+        em.add_field(name = f"Wallet balance", value = f"{wallet_new_balance} gold")
+        em.add_field(name = f"Bank balance", value = f"{bank_new_balance} gold")
+        await ctx.send(embed = em)
+        # await ctx.send(f"{user.mention} has withdrew {gold} gold from their bank account. \n{user} now has {bank_new_balance} gold in their wallet")
+        
+@bot.command()
+@commands.cooldown(1, 3600, commands.BucketType.user)
+async def bankheist(ctx, target: discord.Member):
+    await ctx.send('BANK HEIST TEST')
+    
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandOnCooldown):
+        await ctx.send(f"{ctx.author.mention} This command is on cooldown, you can try again in {round(error.retry_after)} seconds")
         
 bot.run(token)

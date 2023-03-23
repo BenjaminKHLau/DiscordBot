@@ -404,6 +404,8 @@ async def withdraw(ctx, gold):
 @bot.command()
 @commands.cooldown(1, 3600, commands.BucketType.user)
 async def bankheist(ctx, target: discord.Member):
+    user = ctx.author
+    guilds = await get_bank_data()
     await ctx.send('BANK HEIST TEST')
     
 @bot.event

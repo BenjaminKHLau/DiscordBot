@@ -223,7 +223,7 @@ async def lotto(ctx):
             json.dump(guilds, f)
         await get_bank_data()
         new_balance = guilds[str(user.guild.id)][str(user.id)]["wallet"]
-        em.add_field(name = f"You have won the {jackpot} gold jackpot!", value = f"Your new balance is {new_balance}", inline=False)
+        em.add_field(name = f"You have won the {jackpot} gold jackpot!", value = f"Your new balance is {new_balance} gold", inline=False)
         guilds["jackpot"] = 1000000
         with open("eco.json", "w") as f:
             json.dump(guilds, f)
@@ -239,7 +239,7 @@ async def lotto(ctx):
             title = f"{user} drew {user_drawing}. The winning number was {winning_num}!",
             color=discord.Color.red()
         )
-        em.add_field(name = f"You paid 100 gold for a ticket.\nYour ticket doesn't match the winning number.. \nSorry, better luck next time! \nYou now have {new_balance} gold.", value = f"The jackpot is now {jackpot}", inline=False)
+        em.add_field(name = f"You paid 100 gold for a ticket.\nYour ticket doesn't match the winning number.. \nSorry, better luck next time! \nYou now have {new_balance} gold.", value = f"The jackpot is now {jackpot} gold", inline=False)
     
     await ctx.send(embed = em)
     
@@ -406,6 +406,7 @@ async def withdraw(ctx, gold):
 async def bankheist(ctx, target: discord.Member):
     user = ctx.author
     guilds = await get_bank_data()
+    roll = random.randint(0,100)
     await ctx.send('BANK HEIST TEST')
     
 @bot.event

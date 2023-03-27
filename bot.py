@@ -407,7 +407,48 @@ async def bankheist(ctx, target: discord.Member):
     user = ctx.author
     guilds = await get_bank_data()
     roll = random.randint(0,100)
-    await ctx.send('BANK HEIST TEST')
+    print("====================ROLL=================",roll)
+    if roll > 66:
+        percentage = random.randint(10, 75)
+        bank = guilds[str(user.guild.id)][str(target.id)]["bank"]
+        loot = int(bank) * percentage / 100
+        guilds[str(user.guild.id)][str(target.id)]["bank"] -= int(loot)
+        guilds[str(user.guild.id)][str(user.id)]["bank"] += int(loot)
+        with open("eco.json", "w") as f:
+            json.dump(guilds, f)
+        await get_bank_data()
+        em = discord.Embed(
+        title = f"{user} has successfully raided the bank! {user} has stolen {loot} gold from {target}'s bank vault",
+        color=discord.Color.blue()
+    )
+        # em.add_field(name = f"Wallet balance", value = f"{wallet_new_balance} gold")
+        await ctx.send(embed = em)
+        return
+        
+    if 50 < roll < 67:
+        em = discord.Embed(
+        title = f"{user} got intercepted by the police and has failed the bank heist!",
+        color=discord.Color.red()
+        )
+        await ctx.send(embed = em)
+        return
+        
+    if roll < 49:
+        mybank = guilds[str(user.guild.id)][str(user.id)]["bank"]
+        percentage = random.randint(10, 75)
+        mistake = int(mybank) * percentage / 100
+        guilds[str(user.guild.id)][str(user.id)]["bank"] -= int(mistake)
+        with open("eco.json", "w") as f:
+            json.dump(guilds, f)
+        # await get_bank_data()
+        em = discord.Embed(
+        title = f"{user} destroyed {mistake} gold from their own bank vault",
+        color=discord.Color.red()
+        )
+        # em.add_field(name = f"Wallet balance", value = f"{wallet_new_balance} gold")
+        await ctx.send(embed = em)
+        return
+    # await ctx.send('BANK HEIST TEST')
     
 @bot.event
 async def on_command_error(ctx, error):

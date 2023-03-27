@@ -402,16 +402,16 @@ async def withdraw(ctx, gold):
         # await ctx.send(f"{user.mention} has withdrew {gold} gold from their bank account. \n{user} now has {bank_new_balance} gold in their wallet")
         
 @bot.command()
-@commands.cooldown(1, 3600, commands.BucketType.user)
+# @commands.cooldown(1, 3600, commands.BucketType.user)
 async def bankheist(ctx, target: discord.Member):
     user = ctx.author
     guilds = await get_bank_data()
     roll = random.randint(0,100)
-    print("====================ROLL=================",roll)
+    print("====================ROLL=================",user ,roll)
     if roll > 66:
         percentage = random.randint(10, 75)
         bank = guilds[str(user.guild.id)][str(target.id)]["bank"]
-        loot = int(bank) * percentage / 100
+        loot = math.ceil(int(bank) * percentage / 100)
         guilds[str(user.guild.id)][str(target.id)]["bank"] -= int(loot)
         guilds[str(user.guild.id)][str(user.id)]["bank"] += int(loot)
         with open("eco.json", "w") as f:
@@ -425,7 +425,7 @@ async def bankheist(ctx, target: discord.Member):
         await ctx.send(embed = em)
         return
         
-    if 50 < roll < 67:
+    elif 5 < roll < 67:
         em = discord.Embed(
         title = f"{user} got intercepted by the police and has failed the bank heist!",
         color=discord.Color.red()
@@ -433,10 +433,10 @@ async def bankheist(ctx, target: discord.Member):
         await ctx.send(embed = em)
         return
         
-    if roll < 49:
+    elif roll < 6:
         mybank = guilds[str(user.guild.id)][str(user.id)]["bank"]
         percentage = random.randint(10, 75)
-        mistake = int(mybank) * percentage / 100
+        mistake = math.ceil(int(mybank) * percentage / 100)
         guilds[str(user.guild.id)][str(user.id)]["bank"] -= int(mistake)
         with open("eco.json", "w") as f:
             json.dump(guilds, f)

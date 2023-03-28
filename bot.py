@@ -402,7 +402,7 @@ async def withdraw(ctx, gold):
         # await ctx.send(f"{user.mention} has withdrew {gold} gold from their bank account. \n{user} now has {bank_new_balance} gold in their wallet")
         
 @bot.command()
-# @commands.cooldown(1, 3600, commands.BucketType.user)
+@commands.cooldown(1, 3600, commands.BucketType.user)
 async def bankheist(ctx, target: discord.Member):
     user = ctx.author
     guilds = await get_bank_data()
@@ -454,5 +454,9 @@ async def bankheist(ctx, target: discord.Member):
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
         await ctx.send(f"{ctx.author.mention} This command is on cooldown, you can try again in {round(error.retry_after)} seconds")
+        
+@bot.command()
+async def create_inv(ctx):
+    await ctx.send("Work in progress command")
         
 bot.run(token)

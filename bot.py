@@ -351,9 +351,13 @@ async def givegold(ctx, target: discord.Member, gold):
 async def deposit(ctx, gold):
     user = ctx.author
     guilds = await get_bank_data()
+    if gold == "max":
+        gold = guilds[str(user.guild.id)][str(user.id)]["wallet"]
+        # print(gold)
     if int(gold) < 0:
         await ctx.send(f"You cannot deposit negative gold")
         return
+    
     elif guilds[str(user.guild.id)][str(user.id)]["wallet"] < int(gold):
         await ctx.send(f"You don't have enough gold to deposit")
     else:
@@ -378,6 +382,8 @@ async def deposit(ctx, gold):
 async def withdraw(ctx, gold):
     user = ctx.author
     guilds = await get_bank_data()
+    if gold == "max":
+        gold = guilds[str(user.guild.id)][str(user.id)]["bank"]
     if int(gold) < 0:
         await ctx.send(f"You cannot withdraw negative gold")
         return

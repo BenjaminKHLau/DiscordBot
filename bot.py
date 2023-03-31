@@ -83,6 +83,10 @@ async def open_account(user):
         guilds[str(user.guild.id)][str(user.id)] = {}
         guilds[str(user.guild.id)][str(user.id)]["wallet"] = 0
         guilds[str(user.guild.id)][str(user.id)]["bank"] = 0
+        guilds[str(user.guild.id)][str(user.id)]["inventory"] = []
+        guilds[str(user.guild.id)][str(user.id)]["hp"] = 100
+        guilds[str(user.guild.id)][str(user.id)]["xp"] = 0
+        guilds[str(user.guild.id)][str(user.id)]["level"] = 1
         
     with open("eco.json", "w") as f:
         json.dump(guilds, f)
@@ -142,11 +146,11 @@ async def coinflip(ctx, *arg):
 async def on_message(message):
     if message.author == bot.user:
         return
+    print(message.guild, message.channel, message.author, message.content)
     if message.content[0] == "-":
         return
     user = message.author
     await open_account(user)
-    # print("test", user.guild.id)
     guilds = await get_bank_data()
 
     random_multiplier = random.randint(1,3)
@@ -462,7 +466,27 @@ async def on_command_error(ctx, error):
         await ctx.send(f"{ctx.author.mention} This command is on cooldown, you can try again in {round(error.retry_after)} seconds")
         
 @bot.command()
-async def create_inv(ctx):
+async def createinv(ctx): #this can be used to add new slots / clear inventory / reset stats
+    user = ctx.author
+    if str(user.id) == "137812388614373376":
+        guilds = await get_bank_data()
+        
+        for guild in guilds:
+            if guild == "jackpot":
+                continue
+            print("is it working?")
+            # print(guilds[guild])
+            for mem in guilds[guild]:
+                print(guilds[guild][mem])
+                guilds[guild][mem]["inventory"] = []
+                guilds[guild][mem]["hp"] = 100
+                guilds[guild][mem]["xp"] = 0
+                guilds[guild][mem]["level"] = 1
+            print("maybe\n\n\n")
+        with open("eco.json", "w") as f:
+            json.dump(guilds, f)
+    else:
+        await ctx.send("Unauthorized user")
     await ctx.send("Work in progress command")
         
 bot.run(token)

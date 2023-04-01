@@ -489,4 +489,10 @@ async def createinv(ctx): #this can be used to add new slots / clear inventory /
         await ctx.send("Unauthorized user")
     await ctx.send("Work in progress command")
         
+        
+@bot.command()
+async def shop(ctx):
+    await ctx.send("SHOP IS UNDER CONSTRUCTION")
+
+
 bot.run(token)

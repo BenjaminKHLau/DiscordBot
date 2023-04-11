@@ -146,7 +146,7 @@ async def coinflip(ctx, *arg):
 async def on_message(message):
     if message.author == bot.user:
         return
-    print(message.guild, message.channel, message.author, message.content)
+    # print(message.guild, message.channel, message.author, message.content)
     if message.content[0] == "-":
         return
     user = message.author
@@ -492,6 +492,7 @@ async def createinv(ctx): #this can be used to add new slots / clear inventory /
         
 @bot.command()
 async def shop(ctx):
+    user = ctx.author
     await ctx.send("SHOP IS UNDER CONSTRUCTION")
 
 

@@ -412,7 +412,7 @@ async def withdraw(ctx, gold):
         # await ctx.send(f"{user.mention} has withdrew {gold} gold from their bank account. \n{user} now has {bank_new_balance} gold in their wallet")
         
 @bot.command()
-# @commands.cooldown(1, 3600, commands.BucketType.user)
+@commands.cooldown(1, 3600, commands.BucketType.user)
 async def bankheist(ctx, target: discord.Member):
     user = ctx.author
     guilds = await get_bank_data()
@@ -500,15 +500,26 @@ async def shop(ctx):
 
 
 @bot.command()
+@commands.cooldown(1, 1800, commands.BucketType.user)
 async def letmeholdthatdollarealquick(ctx, target: discord.Member):
     user = ctx.author
     guilds = await get_bank_data()
     
     
     roll = random.randint(1, 100)
+    print("Roll", user, roll)
+    
+    
+    victim_wallet = guilds[str(user.guild.id)][str(target.id)]["wallet"]
+    if victim_wallet < 1:
+        em = discord.Embed(
+        title = f"{target} doesn't have any money in their wallet...",
+        color=discord.Color.blue()
+        )
+        await ctx.send(embed = em)
+        return
     
     if roll >= 80:
-        author_wallet = guilds[str(user.guild.id)][str(user.id)]["wallet"]
         target_wallet = guilds[str(user.guild.id)][str(target.id)]["wallet"]
         guilds[str(user.guild.id)][str(user.id)]["wallet"] += target_wallet
         guilds[str(user.guild.id)][str(target.id)]["wallet"] -= target_wallet
@@ -516,13 +527,44 @@ async def letmeholdthatdollarealquick(ctx, target: discord.Member):
             json.dump(guilds, f)
             
         await get_bank_data()
+        author_wallet = guilds[str(user.guild.id)][str(user.id)]["wallet"]
+        target_wallet_nb = guilds[str(user.guild.id)][str(target.id)]["wallet"]
     
     
         em = discord.Embed(
         title = f"{target} exposed their wallet and {user} snatched it and ran off into the distance",
         color=discord.Color.blue()
         )
+        em.add_field(name = f"{user}'s new Wallet balance", value = f"{author_wallet} gold")
+        em.add_field(name = f"{target}'s new Wallet balance", value = f"{target_wallet_nb} gold")
     
         await ctx.send(embed = em)
+        
+    elif 50 <= roll <= 80:
+        guilds[str(user.guild.id)][str(user.id)]["wallet"] += 1
+        guilds[str(user.guild.id)][str(target.id)]["wallet"] -= 1
+        with open("eco.json", "w") as f:
+            json.dump(guilds, f)
+            
+        await get_bank_data()
+        author_wallet = guilds[str(user.guild.id)][str(user.id)]["wallet"]
+        target_wallet_nb = guilds[str(user.guild.id)][str(target.id)]["wallet"]
+        em = discord.Embed(
+        title = f"{target} gave {user} a dollar and went on their merry way",
+        color=discord.Color.blue()
+        )
+        em.add_field(name = f"{user}'s new Wallet balance", value = f"{author_wallet} gold")
+        em.add_field(name = f"{target}'s new Wallet balance", value = f"{target_wallet_nb} gold")
+    
+        await ctx.send(embed = em)
+        
+    elif roll < 50:
+        em = discord.Embed(
+        title = f"{target} told {user} to buzz off.",
+        color=discord.Color.blue()
+        )
+    
+        await ctx.send(embed = em)
+        
 
 bot.run(token)

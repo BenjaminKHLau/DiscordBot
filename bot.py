@@ -339,7 +339,7 @@ async def givegold(ctx, target: discord.Member, gold):
         await ctx.send(f"You cannot give negative gold")
         return
     elif guilds[str(user.guild.id)][str(user.id)]["wallet"] < int(gold):
-        await ctx.send(f"You don't have enough gold to give")
+        await ctx.send(f"You don't have enough gold in your wallet to give")
     else:
         guilds[str(user.guild.id)][str(user.id)]["wallet"] -= int(gold)
         guilds[str(user.guild.id)][str(target.id)]["wallet"] += int(gold)
@@ -412,11 +412,14 @@ async def withdraw(ctx, gold):
         # await ctx.send(f"{user.mention} has withdrew {gold} gold from their bank account. \n{user} now has {bank_new_balance} gold in their wallet")
         
 @bot.command()
-@commands.cooldown(1, 3600, commands.BucketType.user)
+# @commands.cooldown(1, 3600, commands.BucketType.user)
 async def bankheist(ctx, target: discord.Member):
     user = ctx.author
     guilds = await get_bank_data()
     roll = random.randint(0,100)
+    if user == target:
+        await ctx.send("You can't rob yourself!")
+        return
     print("====================ROLL=================",user ,roll)
     if roll > 66:
         percentage = random.randint(10, 75)
@@ -427,11 +430,11 @@ async def bankheist(ctx, target: discord.Member):
         with open("eco.json", "w") as f:
             json.dump(guilds, f)
         await get_bank_data()
-        em = discord.Embed(
-        title = f"{user} has successfully raided the bank! {user} has stolen {loot} gold from {target}'s bank vault",
+        em = discord.Embed(title = f"{user} has successfully raided the bank! {user} has stolen {loot} gold from {target}'s bank vault",
         color=discord.Color.blue()
-    )
-        # em.add_field(name = f"Wallet balance", value = f"{wallet_new_balance} gold")
+        )
+        new_bank_balance = guilds[str(user.guild.id)][str(user.id)]["bank"]
+        em.add_field(name = f"{user}'s new bank balance", value = f"{new_bank_balance} gold")
         await ctx.send(embed = em)
         return
         
@@ -495,5 +498,31 @@ async def shop(ctx):
     user = ctx.author
     await ctx.send("SHOP IS UNDER CONSTRUCTION")
 
+
+@bot.command()
+async def letmeholdthatdollarealquick(ctx, target: discord.Member):
+    user = ctx.author
+    guilds = await get_bank_data()
+    
+    
+    roll = random.randint(1, 100)
+    
+    if roll >= 80:
+        author_wallet = guilds[str(user.guild.id)][str(user.id)]["wallet"]
+        target_wallet = guilds[str(user.guild.id)][str(target.id)]["wallet"]
+        guilds[str(user.guild.id)][str(user.id)]["wallet"] += target_wallet
+        guilds[str(user.guild.id)][str(target.id)]["wallet"] -= target_wallet
+        with open("eco.json", "w") as f:
+            json.dump(guilds, f)
+            
+        await get_bank_data()
+    
+    
+        em = discord.Embed(
+        title = f"{target} exposed their wallet and {user} snatched it and ran off into the distance",
+        color=discord.Color.blue()
+        )
+    
+        await ctx.send(embed = em)
 
 bot.run(token)

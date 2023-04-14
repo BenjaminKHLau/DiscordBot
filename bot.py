@@ -59,6 +59,22 @@ async def balance(ctx):
     em.add_field(name = "Bank balance", value = f"{bank_amount} gold")
     await ctx.send(embed = em)
     
+    
+@bot.command()
+async def profile(ctx, target: discord.Member):
+    await open_account(target)
+    guilds = await get_bank_data()
+    # user = ctx.author
+    
+    wallet_amount = guilds[str(target.guild.id)][str(target.id)]["wallet"]
+    bank_amount = guilds[str(target.guild.id)][str(target.id)]["bank"]
+    
+    em = discord.Embed(title = f"{target}'s  balance", color=discord.Color.blue())
+    em.add_field(name = "Wallet balance", value = f"{wallet_amount} gold")
+    em.add_field(name = "Bank balance", value = f"{bank_amount} gold")
+    await ctx.send(embed = em)
+    
+    
 @bot.command()
 @commands.cooldown(1, 60, commands.BucketType.user)
 async def work(ctx):

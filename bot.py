@@ -228,7 +228,7 @@ async def lotto(ctx):
         await get_bank_data()
         new_balance = guilds[str(user.guild.id)][str(user.id)]["wallet"]
         em.add_field(name = f"You have won the {jackpot} gold jackpot!", value = f"Your new balance is {new_balance} gold", inline=False)
-        guilds["jackpot"] = 1000000
+        guilds["jackpot"] = 10000000
         with open("eco.json", "w") as f:
             json.dump(guilds, f)
     else:
@@ -500,11 +500,14 @@ async def shop(ctx):
 
 
 @bot.command()
-@commands.cooldown(1, 1800, commands.BucketType.user)
+@commands.cooldown(1, 900, commands.BucketType.user)
 async def letmeholdthatdollarealquick(ctx, target: discord.Member):
     user = ctx.author
     guilds = await get_bank_data()
     
+    if user == target:
+        await ctx.send("Yo {user}, go hold someone else's dolla")
+        return
     
     roll = random.randint(1, 100)
     print("Roll", user, roll)

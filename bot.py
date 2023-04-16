@@ -510,10 +510,12 @@ async def createinv(ctx): #this can be used to add new slots / clear inventory /
         
         
 @bot.command()
-async def shop(ctx, item, amt):
+async def shop(ctx, item: str, amt: int):
     user = ctx.author
     menu = {"potion": 20}
+    print("TEST")
     await ctx.send("SHOP IS UNDER CONSTRUCTION")
+    return
     
 @bot.command()
 async def use(ctx):

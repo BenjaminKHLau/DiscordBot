@@ -514,7 +514,7 @@ async def shop(ctx, item: str, amt: int):
     user = ctx.author
     menu = {"potion": 20, "super potion": 50, "hyper potion": 150, "max potion": 250}
     item = item.lower()
-    print("TEST")
+    print("TEST") #testing usage in mac
     await ctx.send("SHOP IS UNDER CONSTRUCTION")
     return
     

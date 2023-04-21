@@ -519,7 +519,8 @@ async def shop(ctx, item: str, amt: int):
     return
     
 @bot.command()
-async def use(ctx):
+async def use(ctx, item):
+    
     await ctx.send("USE IS UNDER CONSTRUCTION")
 
 

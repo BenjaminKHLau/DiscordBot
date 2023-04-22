@@ -520,7 +520,7 @@ async def shop(ctx, item: str, amt: int):
     
 @bot.command()
 async def use(ctx, item):
-    
+    user = ctx.author
     await ctx.send("USE IS UNDER CONSTRUCTION")
 
 
